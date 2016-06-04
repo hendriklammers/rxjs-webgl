@@ -2,7 +2,7 @@
   "name": "rxjs-webgl",
   "version": "0.0.1",
   "description": "Playing with webgl and rxjs",
-  "main": "src/index.js",
+  "main": "src/main.js",
   "scripts": {
     "build": "npm install && npm run lint && webpack --optimize-minimize",
     "lint": "eslint src --ext .js",

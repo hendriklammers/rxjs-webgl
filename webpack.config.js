@@ -2,7 +2,7 @@ var path = require('path')
 
 module.exports = {
   devtool: 'source-map',
-  entry: path.resolve(__dirname, 'src/index.js'),
+  entry: path.resolve(__dirname, 'src/main.js'),
   output: {
     path: path.resolve(__dirname, 'public/js'),
     publicPath: '/js/',
