@@ -5,7 +5,6 @@
     "node": true
   },
   "globals": {
-    "OpenSeadragon": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {

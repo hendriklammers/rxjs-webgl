@@ -16,10 +16,14 @@ module.exports = {
         include: [
           path.resolve(__dirname, 'src')
         ]
+      },
+      {
+        test: /\.glsl$/,
+        loader: 'webpack-glsl',
+        include: [
+          path.resolve(__dirname, 'src')
+        ]
       }
     ]
-  },
-  stats: {
-    colors: true
   }
 }
