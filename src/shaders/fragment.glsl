@@ -28,29 +28,12 @@ void main() {
   vec2 coord = vec2(gl_FragCoord.xy - 0.5 * uCanvasSize.xy);
   coord = 2.0 * coord.xy / uCanvasSize.y;
 
-  for (int i = 0; i < 100; i++) {
-    rect(coord, vec2(-1.0 + 0.05 * float(i), -1.0 + 0.05 * float(i)), vec2(0.02, 0.02), colorStorm, pixel);
+  if (mod(coord.x, 0.1) < 0.005) {
+    pixel = colorParis;
   }
-
-  /* float radius = 0.5; */
-  /* if (coord.x * coord.x + coord.y * coord.y < radius * radius) { */
-  /*   pixel = colorParis; */
-  /* } */
-  /*  */
-  /* if (length(coord) < 0.2) { */
-  /*   pixel = colorLime; */
-  /* } */
-  /*  */
-  /* vec2 center = vec2(-0.8, 0.3); */
-  /* vec2 d = coord - center; // distance */
-  /* if (length(d) < 0.1) { */
-  /*   pixel = colorStorm; */
-  /* } */
-
-  /* for (int i = 0; i < 10; i++) { */
-  /*   vec2 center = vec2(-0.5 + float(i) / 5.0, -0.5); */
-  /*   circle(coord, center, 0.1, colorParis, pixel); */
-  /* } */
+  if (mod(coord.y, 0.1) < 0.005) {
+    pixel = colorParis;
+  }
 
   gl_FragColor = vec4(pixel, alpha);
 }
