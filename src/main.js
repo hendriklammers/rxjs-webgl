@@ -44,20 +44,25 @@ const getCanvas = function() {
   body.style.overflow = 'hidden'
   body.appendChild(canvas)
 
-  window$
-    .subscribe(size => {
-      canvas.width = size.width,
-      canvas.height = size.height
-    })
+  // window$
+  //   .subscribe(size => {
+  //     canvas.width = size.width,
+  //     canvas.height = size.height
+  //   })
 
   return canvas
 }
 
+// const canvas$ = Observable
+//   .of(getCanvas())
+//   .merge(window$)
+//   .subscribe(data => console.log(data))
+
 function init() {
-  const canvas = getCanvas(),
-    gl = getContext(canvas),
-    program = createProgram(gl, vertexSource, fragmentSource),
-    vertexPosBuffer = createScreenBuffer(gl)
+  const canvas = getCanvas()
+  const gl = getContext(canvas)
+  const program = createProgram(gl, vertexSource, fragmentSource)
+  const vertexPosBuffer = createScreenBuffer(gl)
 
   program.vertexPosAttrib = gl.getAttribLocation(program, 'a_vertexPosition')
   program.canvasSizeUniform = gl.getUniformLocation(program, 'u_resolution')
@@ -68,15 +73,13 @@ function init() {
                           vertexPosBuffer.itemSize,
                           gl.FLOAT,
                           false, 0, 0)
-  gl.uniform2f(program.canvasSizeUniform, canvas.clientWidth, canvas.clientHeight)
 
-  // render$.subscribe(render)
+  render$
+    .subscribe(data => {
+      gl.uniform2f(program.canvasSizeUniform, canvas.clientWidth, canvas.clientHeight)
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems)
+    })
 
-  render()
-  function render() {
-    gl.uniform2f(program.canvasSizeUniform, canvas.clientWidth, canvas.clientHeight)
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems)
-  }
 }
 
 dom$.subscribe(init)
