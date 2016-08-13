@@ -3,6 +3,8 @@ import {createProgram, getContext, createScreenBuffer} from './utils'
 import fragmentSource from './shaders/fragment.glsl'
 import vertexSource from './shaders/vertex.glsl'
 
+const canvas = document.body.appendChild(document.createElement('canvas'))
+
 const dom$ = Observable
   .fromEvent(document, 'DOMContentLoaded')
 
@@ -28,38 +30,26 @@ const window$ = Observable
     height: window.innerHeight
   })
 
+const mouse$ = Observable
+  .fromEvent(canvas, 'mousemove')
+  .map(event => ({
+    x: event.clientX,
+    y: event.clientY
+  }))
+  .startWith({x: 0, y: 0})
+
 const render$ = animation$
-  .withLatestFrom(window$)
-  .map(([time, screen]) => ({
+  .withLatestFrom(window$, mouse$)
+  .map(([time, screen, mouse]) => ({
     time,
-    screen
+    screen,
+    mouse
   }))
 
-const getCanvas = function() {
-  const canvas = document.createElement('canvas')
-
-  const body = document.body
-  body.style.margin = '0'
-  body.style.padding = '0'
-  body.style.overflow = 'hidden'
-  body.appendChild(canvas)
-
-  // window$
-  //   .subscribe(size => {
-  //     canvas.width = size.width,
-  //     canvas.height = size.height
-  //   })
-
-  return canvas
-}
-
-// const canvas$ = Observable
-//   .of(getCanvas())
-//   .merge(window$)
-//   .subscribe(data => console.log(data))
+render$
+  .subscribe(data => console.log(data))
 
 function init() {
-  const canvas = getCanvas()
   const gl = getContext(canvas)
   const program = createProgram(gl, vertexSource, fragmentSource)
   const vertexPosBuffer = createScreenBuffer(gl)
@@ -74,12 +64,10 @@ function init() {
                           gl.FLOAT,
                           false, 0, 0)
 
-  render$
-    .subscribe(data => {
-      gl.uniform2f(program.canvasSizeUniform, canvas.clientWidth, canvas.clientHeight)
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems)
-    })
-
+  gl.uniform2f(program.canvasSizeUniform,
+                data.screen.width,
+                data.screen.height)
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems)
 }
 
-dom$.subscribe(init)
+// dom$.subscribe(init)
