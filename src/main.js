@@ -18,11 +18,10 @@ const bufferInfo = twgl.createBufferInfoFromArrays(gl, bufferArrays)
 // Animation stream uses requestAnimationFrame to schedule update interval
 const animation$ = Observable
   .interval(1000 / 60, Scheduler.requestAnimationFrame)
-  .map(() => ({time: Date.now(), deltaTime: null, count: 0}))
+  .map(() => ({time: Date.now(), duration: 0}))
   .scan((prev, curr) => ({
     time: curr.time,
-    deltaTime: (curr.time - prev.time) / 1000,
-    count: prev.count + 1
+    duration: prev.duration + (curr.time - prev.time) / 1000
   }))
 
 // Window stream listens to browser resize and starts of with current size
@@ -65,7 +64,7 @@ const render$ = animation$
 // Draw webGL buffer using twgl
 const renderGl = data => {
   const uniforms = {
-    u_time: data.time * 0.001,
+    u_time: data.time.duration,
     u_resolution: [data.screen.width, data.screen.height]
   }
 
