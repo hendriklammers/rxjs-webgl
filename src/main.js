@@ -8,7 +8,10 @@ const canvas = document.body.appendChild(document.createElement('canvas'))
 const gl = twgl.getWebGLContext(canvas)
 const programInfo = twgl.createProgramInfo(gl, [vertexSource, fragmentSource])
 const bufferArrays = {
-  a_position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0]
+  a_position: {
+    numComponents: 2,
+    data: new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
+  }
 }
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, bufferArrays)
 
@@ -71,7 +74,7 @@ const renderGl = data => {
 
   twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
   twgl.setUniforms(programInfo, uniforms)
-  twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo)
+  twgl.drawBufferInfo(gl, gl.TRIANGLE_STRIP, bufferInfo)
 }
 
 render$
