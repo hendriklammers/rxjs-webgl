@@ -59,17 +59,20 @@ const render$ = animation$
     mouse
   }))
 
+// Draw webGL buffer using twgl
+const renderGl = data => {
+  const uniforms = {
+    u_time: data.time * 0.001,
+    u_resolution: [data.screen.width, data.screen.height]
+  }
+
+  gl.viewport(0, 0, data.screen.width, data.screen.height)
+  gl.useProgram(programInfo.program)
+
+  twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
+  twgl.setUniforms(programInfo, uniforms)
+  twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo)
+}
+
 render$
-  .subscribe(data => {
-    gl.viewport(0, 0, data.screen.width, data.screen.height)
-
-    const uniforms = {
-      u_time: data.time * 0.001,
-      u_resolution: [data.screen.width, data.screen.height]
-    }
-
-    gl.useProgram(programInfo.program)
-    twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
-    twgl.setUniforms(programInfo, uniforms)
-    twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo)
-  })
+  .subscribe(renderGl, err => console.log(err))
