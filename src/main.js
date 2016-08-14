@@ -1,43 +1,56 @@
+import twgl from 'twgl.js'
 import {Observable, Scheduler} from 'rxjs/Rx'
-import {createProgram, getContext, createScreenBuffer} from './utils'
 import fragmentSource from './shaders/fragment.glsl'
 import vertexSource from './shaders/vertex.glsl'
 
+// Setup twgl
 const canvas = document.body.appendChild(document.createElement('canvas'))
+const gl = twgl.getWebGLContext(canvas)
+const programInfo = twgl.createProgramInfo(gl, [vertexSource, fragmentSource])
+const bufferArrays = {
+  a_position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0]
+}
+const bufferInfo = twgl.createBufferInfoFromArrays(gl, bufferArrays)
 
-const dom$ = Observable
-  .fromEvent(document, 'DOMContentLoaded')
-
+// Animation stream uses requestAnimationFrame to schedule update interval
 const animation$ = Observable
   .interval(1000 / 60, Scheduler.requestAnimationFrame)
   .map(() => ({time: Date.now(), deltaTime: null, count: 0}))
-  .scan((previous, current) => ({
-    time: current.time,
-    deltaTime: (current.time - previous.time) / 1000,
-    count: previous.count + 1
+  .scan((prev, curr) => ({
+    time: curr.time,
+    deltaTime: (curr.time - prev.time) / 1000,
+    count: prev.count + 1
   }))
 
+// Window stream listens to browser resize and starts of with current size
 const window$ = Observable
   .fromEvent(window, 'resize')
   .debounceTime(250)
   .distinctUntilChanged()
-  .map(event => ({
-    width: event.currentTarget.innerWidth,
-    height: event.currentTarget.innerHeight
+  .map(e => ({
+    width: e.currentTarget.innerWidth,
+    height: e.currentTarget.innerHeight
   }))
   .startWith({
     width: window.innerWidth,
     height: window.innerHeight
   })
+  // Side effect: Update canvas size
+  .do(screen => {
+    canvas.width = screen.width,
+    canvas.height = screen.height
+  })
 
+// Mouse event stream emits on mousemove
 const mouse$ = Observable
   .fromEvent(canvas, 'mousemove')
-  .map(event => ({
-    x: event.clientX,
-    y: event.clientY
+  .map(e => ({
+    x: e.clientX,
+    y: e.clientY
   }))
   .startWith({x: 0, y: 0})
 
+// Combined stream
 const render$ = animation$
   .withLatestFrom(window$, mouse$)
   .map(([time, screen, mouse]) => ({
@@ -47,27 +60,16 @@ const render$ = animation$
   }))
 
 render$
-  .subscribe(data => console.log(data))
+  .subscribe(data => {
+    gl.viewport(0, 0, data.screen.width, data.screen.height)
 
-function init() {
-  const gl = getContext(canvas)
-  const program = createProgram(gl, vertexSource, fragmentSource)
-  const vertexPosBuffer = createScreenBuffer(gl)
+    const uniforms = {
+      u_time: data.time * 0.001,
+      u_resolution: [data.screen.width, data.screen.height]
+    }
 
-  program.vertexPosAttrib = gl.getAttribLocation(program, 'a_vertexPosition')
-  program.canvasSizeUniform = gl.getUniformLocation(program, 'u_resolution')
-
-  gl.useProgram(program)
-  gl.enableVertexAttribArray(program.vertexPosArray)
-  gl.vertexAttribPointer(program.vertexPosAttrib,
-                          vertexPosBuffer.itemSize,
-                          gl.FLOAT,
-                          false, 0, 0)
-
-  gl.uniform2f(program.canvasSizeUniform,
-                data.screen.width,
-                data.screen.height)
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems)
-}
-
-// dom$.subscribe(init)
+    gl.useProgram(programInfo.program)
+    twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
+    twgl.setUniforms(programInfo, uniforms)
+    twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo)
+  })
