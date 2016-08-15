@@ -7,14 +7,11 @@ uniform float u_time;
 
 void main() {
   float alpha = 1.0;
-  vec3 pixel = vec3(0.5, 0.5, 0.5);
-
-  vec2 coord = gl_FragCoord.xy / u_resolution.xy;
-  /* coord = 2.0 * coord.xy / u_resolution.y; */
+  vec3 pixel = vec3(0.3);
 
   if (mod(gl_FragCoord.x, 2.0) > 1.0
       && mod(gl_FragCoord.y, 2.0) > 1.0) {
-    pixel = vec3(cos(coord.x / coord.y * 100.0));
+    pixel = vec3(cos(gl_FragCoord.y * u_time * 0.8));
   }
 
   gl_FragColor = vec4(pixel, alpha);
