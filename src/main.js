@@ -1,6 +1,6 @@
 import twgl from 'twgl.js'
 import {Observable, Scheduler} from 'rxjs/Rx'
-import fragmentSource from './shaders/fragment.glsl'
+import fragmentSource from './shaders/fragment-17082016.glsl'
 import vertexSource from './shaders/vertex.glsl'
 
 // Setup twgl
@@ -15,13 +15,22 @@ const bufferArrays = {
 }
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, bufferArrays)
 
+const pause$ = Observable
+  .fromEvent(document, 'keydown')
+  .filter(e => e.keyCode === 32)
+  .startWith(false)
+  .scan((prev) => !prev)
+
 // Animation stream uses requestAnimationFrame to schedule update interval
 const animation$ = Observable
   .interval(1000 / 60, Scheduler.requestAnimationFrame)
-  .map(() => ({time: Date.now(), duration: 0}))
+  .withLatestFrom(pause$)
+  .filter(arr => !arr[1])
+  .map(() => ({time: Date.now(), duration: 0, count: 0}))
   .scan((prev, curr) => ({
     time: curr.time,
-    duration: prev.duration + (curr.time - prev.time) / 1000
+    duration: prev.duration + (curr.time - prev.time) / 1000,
+    count: prev.count + 1
   }))
 
 // Window stream listens to browser resize and starts of with current size
@@ -64,7 +73,7 @@ const render$ = animation$
 // Draw webGL buffer using twgl
 const renderGl = data => {
   const uniforms = {
-    u_time: data.time.duration,
+    u_time: data.time.count / 60,
     u_resolution: [data.screen.width, data.screen.height]
   }
 
