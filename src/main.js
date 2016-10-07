@@ -15,6 +15,7 @@ const bufferArrays = {
 }
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, bufferArrays)
 
+// Toggles pause when spacebar is pressed
 const pause$ = Observable
   .fromEvent(document, 'keydown')
   .filter(e => e.keyCode === 32)
