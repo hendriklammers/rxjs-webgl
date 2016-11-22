@@ -1,6 +1,6 @@
 import twgl from 'twgl.js'
 import {Observable, Scheduler} from 'rxjs/Rx'
-import fragmentSource from './shaders/fragment-17082016.glsl'
+import fragmentSource from './shaders/fragment-15082016.glsl'
 import vertexSource from './shaders/vertex.glsl'
 
 // Setup twgl
@@ -21,6 +21,7 @@ const pause$ = Observable
   .filter(e => e.keyCode === 32)
   .startWith(false)
   .scan((prev) => !prev)
+  .do(p => console.log(`Paused: ${p}`))
 
 // Animation stream uses requestAnimationFrame to schedule update interval
 const animation$ = Observable
